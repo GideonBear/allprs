@@ -60,6 +60,10 @@ repos:
         pass_filenames: false # Check all files to be thorough
         args: # Removes default `--ignore-missing-imports`
           - .
+        additional_dependencies:
+          - pygithub
+          - types-requests
+          - readchar
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: "v2.11.0"
