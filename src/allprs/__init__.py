@@ -153,6 +153,7 @@ def check_status(pr: PullRequest) -> None:
         elif state == "pending":  # noqa: RET505
             # TODO(GideonBear): When we have pre-commit lite  # noqa: FIX002, TD003
             #  running we can remove this, as we then always have status checks then
+            #  OR do cookiecutters prevent this?
             if len(list(list(pr.get_commits())[-1].get_statuses())) == 0:
                 return
             print(f"Status check: {state}. Sleeping 5s...")
