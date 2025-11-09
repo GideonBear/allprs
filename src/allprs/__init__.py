@@ -45,7 +45,7 @@ def main() -> None:
             if pr_query_data.get("head_branch_regex"):
                 all_prs = filter(
                     lambda pr: re.match(
-                        pr_query_data.get("head_branch_regex"), pr.head.label
+                        pr_query_data.get("head_branch_regex"), pr.head.ref
                     ),
                     all_prs,
                 )
