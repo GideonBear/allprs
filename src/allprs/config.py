@@ -22,7 +22,7 @@ pr_queries = data.get(
         {"query": "author:app/pre-commit-ci"},
         {"query": "author:app/renovate"},
         {"query": "author:app/dependabot"},
-        {"query": "author:@me", "head_branch_regex": "^all-repos_autofixer_.*$"},
+        {"query": "author:@me", "head_branch_regex": "^all-repos_autofix_.*$"},
     ],
 )
 pr_queries_extend = data.get("pr_queries_extend")
