@@ -57,7 +57,7 @@ def main() -> None:
                     title_prs,
                 )
                 for diff, diff_prs in diff_groups.items():
-                    process_diff_group(title, diff, diff_prs)
+                    process_diff_group(g, title, diff, diff_prs)
                     # if ret == CLOSE_TITLEGROUP:
                     #     for
 
@@ -65,7 +65,8 @@ def main() -> None:
 # CLOSE_TITLEGROUP = object()
 
 
-def process_diff_group(
+def process_diff_group(  # noqa: C901
+    g: Github,
     title: str,
     diff: str,
     diff_prs: Sequence[PullRequest],
@@ -102,7 +103,10 @@ def process_diff_group(
         if answer == "a":
             for pr in diff_prs:
                 print(f"Merging for {pr.base.repo.full_name}...")
-                pr.create_review(event="APPROVE")
+                if pr.user.login == g.get_user().login:
+                    print("Skipping approval as you authored that PR")
+                else:
+                    pr.create_review(event="APPROVE")
                 pr.merge(merge_method="squash", delete_branch=True)
 
             break
