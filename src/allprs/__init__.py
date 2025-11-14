@@ -147,13 +147,10 @@ def process_diff_group(  # noqa: C901
 
 def check_status(pr: PullRequest) -> None:
     while True:
-        state = list(pr.get_commits())[-1].get_combined_status().state
+        state = get_status(pr)
         if state == "success":
             return
         elif state == "pending":  # noqa: RET505
-            # TODO(GideonBear): When we have pre-commit lite  # noqa: FIX002, TD003
-            #  running we can remove this, as we then always have status checks then
-            #  OR do cookiecutters prevent this?
             if len(list(list(pr.get_commits())[-1].get_statuses())) == 0:
                 return
             print(f"Status check: {state}. Sleeping 5s...")
@@ -162,6 +159,37 @@ def check_status(pr: PullRequest) -> None:
             print(f"Status check: {state}! Opening...")
             webbrowser.open(pr.html_url)
             sys.exit(1)
+
+
+def get_status(pr: PullRequest) -> str:
+    commit = list(pr.get_commits())[-1]
+    status_state = commit.get_combined_status().state
+    check_run_state = "success"
+    for check_run in commit.get_check_runs():
+        if check_run.conclusion == "success":
+            pass
+        elif check_run.conclusion == "pending" and check_run_state == "success":
+            check_run_state = "pending"
+        elif check_run.conclusion == "failure":
+            check_run_state = "failure"
+        else:
+            msg = f"Unexpected check run conclusion: {check_run.conclusion}"
+            raise Exception(msg)  # noqa: TRY002
+
+    if status_state == "failure" or check_run_state == "failure":
+        state = "failure"
+    elif status_state == "pending" or check_run_state == "pending":
+        state = "pending"
+    elif status_state == "success" and check_run_state == "success":
+        state = "success"
+    else:
+        msg = (
+            f"Unexpected check run conclusion or status state: "
+            f"{check_run_state}, {status_state}"
+        )
+        raise Exception(msg)  # noqa: TRY002
+
+    return state
 
 
 def get_diff(pr: PullRequest, token: str) -> str:
