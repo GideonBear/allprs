@@ -65,7 +65,7 @@ def main() -> None:
 # CLOSE_TITLEGROUP = object()
 
 
-def process_diff_group(  # noqa: C901
+def process_diff_group(
     g: Github,
     title: str,
     diff: str,
@@ -81,18 +81,13 @@ def process_diff_group(  # noqa: C901
 
     print("Waiting for status checks...")
     for pr in diff_prs:
-        check_status(pr)
+        if check_status(pr):
+            return
 
     print_header()
 
-    try:
-        subprocess.run(["delta"], input=diff.encode(), check=True)  # noqa: S607
-    except FileNotFoundError:
-        print()
-        print(diff)
+    print_diff(diff)
     print()
-
-    ret = None
 
     while True:
         # print("(a)ccept/(o)pen/(s)kip/(c)lose/(q)uit ", end="")
@@ -102,13 +97,7 @@ def process_diff_group(  # noqa: C901
         print()
         if answer == "a":
             for pr in diff_prs:
-                print(f"Merging for {pr.base.repo.full_name}...")
-                if pr.user.login == g.get_user().login:
-                    print("Skipping approval as you authored that PR")
-                else:
-                    pr.create_review(event="APPROVE")
-                pr.merge(merge_method="squash", delete_branch=True)
-
+                merge(pr, g)
             break
         elif answer == "o":  # noqa: RET508
             print("Opening random PR from diff group...")
@@ -142,23 +131,29 @@ def process_diff_group(  # noqa: C901
             print("Invalid answer")
 
     clear()
-    return ret
 
 
-def check_status(pr: PullRequest) -> None:
+def check_status(pr: PullRequest) -> bool:
+    """
+    Check the status of a pr.
+
+    Returns:
+        true if the PR should be skipped
+
+    """
     while True:
         state = get_status(pr)
         if state == "success":
-            return
+            return False
         elif state == "pending":  # noqa: RET505
             if len(list(list(pr.get_commits())[-1].get_statuses())) == 0:
-                return
+                return False
             print(f"Status check: {state}. Sleeping 5s...")
             sleep(5)
         else:
-            print(f"Status check: {state}! Opening...")
+            print(f"Status check: {state}! Opening and skipping...")
             webbrowser.open(pr.html_url)
-            sys.exit(1)
+            return True
 
 
 def get_status(pr: PullRequest) -> str:
@@ -166,14 +161,15 @@ def get_status(pr: PullRequest) -> str:
     status_state = commit.get_combined_status().state
     check_run_state = "success"
     for check_run in commit.get_check_runs():
-        if check_run.conclusion == "success":
+        conclusion: str | None = check_run.conclusion
+        if conclusion == "success":
             pass
-        elif check_run.conclusion == "pending" and check_run_state == "success":
+        elif conclusion is None and check_run_state in {"success", "pending"}:
             check_run_state = "pending"
-        elif check_run.conclusion == "failure":
+        elif conclusion == "failure":
             check_run_state = "failure"
         else:
-            msg = f"Unexpected check run conclusion: {check_run.conclusion}"
+            msg = f"Unexpected check run conclusion: {conclusion}"
             raise Exception(msg)  # noqa: TRY002
 
     if status_state == "failure" or check_run_state == "failure":
@@ -207,3 +203,20 @@ def get_diff(pr: PullRequest, token: str) -> str:
 
 def fix_diff(diff: str) -> str:
     return "\n".join(line for line in diff.split("\n") if not line.startswith("index"))
+
+
+def print_diff(diff: str) -> None:
+    try:
+        subprocess.run(["delta"], input=diff.encode(), check=True)  # noqa: S607
+    except FileNotFoundError:
+        print()
+        print(diff)
+
+
+def merge(pr: PullRequest, g: Github) -> None:
+    print(f"Merging for {pr.base.repo.full_name}...")
+    if pr.user.login == g.get_user().login:
+        print("Skipping approval as you authored that PR")
+    else:
+        pr.create_review(event="APPROVE")
+    pr.merge(merge_method="squash", delete_branch=True)
