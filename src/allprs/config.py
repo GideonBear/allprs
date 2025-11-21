@@ -11,7 +11,7 @@ if path.exists():
 else:
     data = {}
 
-repo_query = data.get("repo_query", "user:@me")
+repo_query = data.get("repo_query", "user:@me archived:false")
 repo_query_extend = data.get("repo_query_extend")
 if repo_query_extend:
     repo_query += f" {repo_query_extend}"
