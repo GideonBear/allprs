@@ -4,7 +4,7 @@ requires = [ "uv-build>=0.9.8,<0.10" ]
 
 [project]
 name = "allprs"
-version = "1.0.0"
+version = "1.1.0"
 description = "Approve and merge PRs in bulk"
 readme = "README.md"
 license = "GPL-3.0-only"
