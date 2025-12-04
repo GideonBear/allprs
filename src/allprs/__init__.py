@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import argparse
 import asyncio
 import contextlib
 import operator
 import re
 import subprocess
+import sys
 import webbrowser
-from asyncio import Event
+from asyncio import Event, Future, Task
 from typing import TYPE_CHECKING, Literal
 
 from githubkit import GitHub
@@ -34,9 +36,29 @@ if TYPE_CHECKING:
     )
 
 
+class Args(argparse.Namespace):
+    urls: list[str]
+
+
+def parse_args() -> Args:
+    parser = argparse.ArgumentParser("allprs")
+
+    parser.add_argument(
+        "urls",
+        nargs="*",
+        type=str,
+        help="When specified, ignore `pr_queries` and merge only these PRs",
+    )
+
+    return parser.parse_args(namespace=Args())
+
+
 def main() -> None:
-    runner = Runner()
+    args = parse_args()
+    runner = Runner(args)
     asyncio.run(runner.run())
+    if runner.quit.is_set():
+        sys.exit(1)
 
 
 class DoneType:
@@ -47,13 +69,13 @@ DONE = DoneType()
 
 
 class Runner:
-    def __init__(self) -> None:
+    def __init__(self, args: Args) -> None:
+        self.args = args
         token = (
             subprocess.run(["gh", "auth", "token"], check=True, stdout=subprocess.PIPE)  # noqa: S607
             .stdout.decode()
             .strip()
         )
-        self.token = token
         self.gh = GitHub(token)
         self.queue: asyncio.Queue[
             tuple[str, str, Sequence[PullRequest], Sequence[str]] | DoneType
@@ -70,13 +92,17 @@ class Runner:
 
             # We care about this task being lost if we quit,
             # so we need to cancel it (if we quit)
-            queue_fill_task = asyncio.gather(
-                *[self.do_pr_query(pr_query_data) for pr_query_data in pr_queries]
-            )
+            queue_fill_task: Future[list[None]] | Task[object]
+            if self.args.urls:
+                queue_fill_task = asyncio.create_task(self.do_pr_urls(self.args.urls))
+            else:
+                queue_fill_task = asyncio.gather(
+                    *[self.do_pr_query(pr_query_data) for pr_query_data in pr_queries]
+                )
             # We don't care about this task being lost if we quit
             quit_task = asyncio.create_task(self.quit.wait())
             # If the queue is filled or the user wants to quit...
-            await asyncio.wait(  # type: ignore[type-var]  # It generalizes the two tasks to `object`, but it works
+            await asyncio.wait(
                 [queue_fill_task, quit_task], return_when=asyncio.FIRST_COMPLETED
             )
             if self.quit.is_set():
@@ -121,6 +147,23 @@ class Runner:
                 if re.match(pr_query_data["head_branch_regex"], pr.head.ref)
             )
 
+        await self.do_pr_set(all_prs)
+
+    async def do_pr_urls(self, urls: list[str]) -> None:
+        all_prs: Iterable[PullRequest] = await asyncio.gather(
+            *[self.get_pr_from_url(url) for url in urls]
+        )
+
+        await self.do_pr_set(all_prs)
+
+    async def get_pr_from_url(self, url: str) -> PullRequest:
+        url = url.removeprefix("https://github.com/")
+        owner, repo, _pull, number = url.split("/")
+        return (
+            await self.gh.rest.pulls.async_get(owner, repo, int(number))
+        ).parsed_data
+
+    async def do_pr_set(self, all_prs: Iterable[PullRequest]) -> None:
         title_groups = group_by(lambda x: x.title, all_prs)
 
         for title, title_prs in title_groups.items():
