@@ -96,9 +96,9 @@ class Runner:
             if self.args.urls:
                 queue_fill_task = asyncio.create_task(self.do_pr_urls(self.args.urls))
             else:
-                queue_fill_task = asyncio.gather(
-                    *[self.do_pr_query(pr_query_data) for pr_query_data in pr_queries]
-                )
+                queue_fill_task = asyncio.gather(*[
+                    self.do_pr_query(pr_query_data) for pr_query_data in pr_queries
+                ])
             # We don't care about this task being lost if we quit
             quit_task = asyncio.create_task(self.quit.wait())
             # If the queue is filled or the user wants to quit...
@@ -129,16 +129,14 @@ class Runner:
     async def do_pr_query(self, pr_query_data: dict[str, str]) -> None:
         pr_query = pr_query_data["query"]
 
-        all_prs: Iterable[PullRequest] = await asyncio.gather(
-            *[
-                self.get_pr(pr)
-                async for pr in self.gh.rest.paginate(
-                    self.gh.rest.search.async_issues_and_pull_requests,
-                    q=f"is:pr state:open {config.repo_query} {pr_query}",
-                    map_func=lambda r: r.parsed_data.items,
-                )
-            ]
-        )
+        all_prs: Iterable[PullRequest] = await asyncio.gather(*[
+            self.get_pr(pr)
+            async for pr in self.gh.rest.paginate(
+                self.gh.rest.search.async_issues_and_pull_requests,
+                q=f"is:pr state:open {config.repo_query} {pr_query}",
+                map_func=lambda r: r.parsed_data.items,
+            )
+        ])
 
         if "head_branch_regex" in pr_query_data:
             all_prs = (
@@ -150,9 +148,9 @@ class Runner:
         await self.do_pr_set(all_prs)
 
     async def do_pr_urls(self, urls: list[str]) -> None:
-        all_prs: Iterable[PullRequest] = await asyncio.gather(
-            *[self.get_pr_from_url(url) for url in urls]
-        )
+        all_prs: Iterable[PullRequest] = await asyncio.gather(*[
+            self.get_pr_from_url(url) for url in urls
+        ])
 
         await self.do_pr_set(all_prs)
 
@@ -176,12 +174,10 @@ class Runner:
                 ).items()
             }
 
-            statuses: list[list[str]] = await asyncio.gather(
-                *[
-                    asyncio.gather(*[self.wait_for_status(pr) for pr in diff_group])
-                    for diff_group in diff_groups.values()
-                ]
-            )
+            statuses: list[list[str]] = await asyncio.gather(*[
+                asyncio.gather(*[self.wait_for_status(pr) for pr in diff_group])
+                for diff_group in diff_groups.values()
+            ])
 
             # Make sure to put an entire title group into the queue at once,
             # without any awaits in between
