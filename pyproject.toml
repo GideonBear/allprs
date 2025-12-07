@@ -28,6 +28,8 @@ urls.homepage = "https://github.com/GideonBear/allprs"
 scripts.allprs = "allprs:main"
 
 [tool.ruff]
+format.preview = true
+
 lint.select = [ "ALL" ]
 
 lint.ignore = [
