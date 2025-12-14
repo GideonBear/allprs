@@ -43,11 +43,20 @@ class Args(argparse.Namespace):
 def parse_args() -> Args:
     parser = argparse.ArgumentParser("allprs")
 
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+
+    group.add_argument(
         "urls",
         nargs="*",
         type=str,
         help="When specified, ignore `pr_queries` and merge only these PRs",
+    )
+    group.add_argument(
+        "--title",
+        "-t",
+        type=str,
+        help="When specified, ignore `pr_queries` "
+        "and merge only PRs containing this in the title",
     )
 
     return parser.parse_args(namespace=Args())
@@ -165,6 +174,9 @@ class Runner:
         title_groups = group_by(lambda x: x.title, all_prs)
 
         for title, title_prs in title_groups.items():
+            # If we specified a title and it's not in here:
+            if self.args.title and self.args.title not in title:
+                continue  # Skip
             diffs = await asyncio.gather(*[self.get_diff(pr) for pr in title_prs])
             diff_groups: dict[str, list[PullRequest]] = {
                 k: [x[0] for x in v]
