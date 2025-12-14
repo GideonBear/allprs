@@ -1,0 +1,25 @@
+{
+    $schema: "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:best-practices",
+        ":semanticCommits",
+    ],
+    lockFileMaintenance: {
+        enabled: true,
+    },
+    packageRules: [
+        {
+            matchDepTypes: [
+                "requires-python",
+            ],
+            rangeStrategy: "bump",
+        },
+        {
+            matchDepTypes: [
+                "requires-python",
+            ],
+            matchUpdateTypes: "patch",
+            enabled: false,
+        },
+    ],
+}
