@@ -45,11 +45,10 @@ repos:
         args: [ "--pytest-test-first" ]
 
   - repo: https://github.com/GideonBear/pre-commit-hooks
-    rev: v1.8.0
+    rev: v1.7.1
     hooks:
       # General
       - id: gha-pin
-      - id: pre-commit-ci-skip
       - id: pre-commit-config-sections-shell
       - id: pre-commit-config-sections-python
       - id: pre-commit-config-sections-pytest
@@ -120,6 +119,9 @@ repos:
         pass_filenames: false # Check all files to be thorough
         args: # Removes default `--ignore-missing-imports`
           - .
+        additional_dependencies:
+          - githubkit==0.13.7
+          - prompt-toolkit==3.0.52
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.11.1
