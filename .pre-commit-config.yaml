@@ -45,7 +45,7 @@ repos:
         args: [ "--pytest-test-first" ]
 
   - repo: https://github.com/GideonBear/pre-commit-hooks
-    rev: v1.8.0
+    rev: v1.8.1
     hooks:
       # General
       - id: gha-pin
@@ -114,7 +114,7 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.0
+    rev: v1.19.1
     hooks:
       - id: mypy
         pass_filenames: false # Check all files to be thorough
@@ -130,7 +130,7 @@ repos:
       - id: pyproject-fmt
 
   - repo: https://github.com/francescorubbo/deptry-pre-commit
-    rev: v0.24.0
+    rev: v0.24.0.1
     hooks:
       - id: deptry
         entry: deptry src
