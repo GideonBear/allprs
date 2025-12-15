@@ -45,10 +45,11 @@ repos:
         args: [ "--pytest-test-first" ]
 
   - repo: https://github.com/GideonBear/pre-commit-hooks
-    rev: v1.7.1
+    rev: v1.8.0
     hooks:
       # General
       - id: gha-pin
+      - id: pre-commit-ci-skip
       - id: pre-commit-config-sections-shell
       - id: pre-commit-config-sections-python
       - id: pre-commit-config-sections-pytest
