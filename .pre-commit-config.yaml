@@ -133,4 +133,4 @@ repos:
     rev: v0.24.0.1
     hooks:
       - id: deptry
-        entry: deptry src
+        args: [ "src" ]
