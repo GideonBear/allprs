@@ -81,7 +81,8 @@ class Runner:
     def __init__(self, args: Args) -> None:
         self.args = args
         token = (
-            subprocess.run(["gh", "auth", "token"], check=True, stdout=subprocess.PIPE)  # noqa: S607
+            subprocess
+            .run(["gh", "auth", "token"], check=True, stdout=subprocess.PIPE)  # noqa: S607
             .stdout.decode()
             .strip()
         )
