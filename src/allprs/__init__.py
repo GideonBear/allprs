@@ -88,7 +88,8 @@ class Runner:
         )
         self.gh = GitHub(token)
         self.queue: asyncio.Queue[
-            tuple[str, str, Sequence[PullRequest], Sequence[str]] | DoneType
+            tuple[str, str, Sequence[PullRequest], Sequence[tuple[str, str | None]]]
+            | DoneType
         ] = asyncio.Queue()
         self.follow_tasks: asyncio.TaskGroup
         self.input = create_input()
@@ -187,7 +188,7 @@ class Runner:
                 ).items()
             }
 
-            statuses: list[list[str]] = await asyncio.gather(*[
+            statuses: list[list[tuple[str, str | None]]] = await asyncio.gather(*[
                 asyncio.gather(*[self.wait_for_status(pr) for pr in diff_group])
                 for diff_group in diff_groups.values()
             ])
@@ -199,15 +200,15 @@ class Runner:
             ):
                 self.queue.put_nowait((title, diff, diff_prs, diff_statuses))
 
-    async def wait_for_status(self, pr: PullRequest) -> str:
+    async def wait_for_status(self, pr: PullRequest) -> tuple[str, str | None]:
         while True:
-            state = await self.get_status(pr)
+            state, fail_example = await self.get_status(pr)
             if state == "pending":
                 await asyncio.sleep(5)
             else:
-                return state
+                return state, fail_example
 
-    async def get_status(self, pr: PullRequest) -> str:
+    async def get_status(self, pr: PullRequest) -> tuple[str, str | None]:
         # TODO(GideonBear): Refactor and split up this function  # noqa: FIX002, TD003
         assert pr.base.repo.owner is not None  # noqa: S101
         commit: Commit = [  # type: ignore[var-annotated]
@@ -230,6 +231,7 @@ class Runner:
             status_state = "success"
 
         check_run_state = "success"
+        fail_example: str | None = None
         check_run: CheckRun
         async for check_run in self.gh.rest.paginate(
             self.gh.rest.checks.async_list_for_ref,
@@ -246,6 +248,7 @@ class Runner:
             elif conclusion is None and check_run_state == "failure":
                 pass
             elif conclusion in {"failure", "action_required", "cancelled", "timed_out"}:
+                fail_example = check_run.html_url
                 check_run_state = "failure"
             else:
                 raise AssertionError(conclusion, check_run_state)
@@ -259,7 +262,7 @@ class Runner:
         else:
             raise AssertionError(status_state, check_run_state)
 
-        return state
+        return (state, fail_example)
 
     async def get_pr(self, pr_issue: IssueSearchResultItem) -> PullRequest:
         repository = await self.gh.arequest("GET", pr_issue.repository_url)
@@ -298,12 +301,12 @@ class Runner:
                 self.quit.set()
                 return
 
-    async def ui_diff_group(
+    async def ui_diff_group(  # noqa: C901
         self,
         title: str,
         diff: str,
         diff_prs: Sequence[PullRequest],
-        statuses: Sequence[str],
+        statuses: Sequence[tuple[str, str | None]],
     ) -> Literal["quit"] | None:
         def print_header() -> None:
             clear()
@@ -313,10 +316,12 @@ class Runner:
 
         print_header()
 
-        for i, status in enumerate(statuses):
+        for i, (status, fail_example) in enumerate(statuses):
             if status != "success":
                 print(f"Status check: {status}! Opening and skipping...")
                 webbrowser.open(diff_prs[i].html_url)
+                if fail_example is not None:
+                    webbrowser.open(fail_example)
                 return None
 
         print_diff(diff)
