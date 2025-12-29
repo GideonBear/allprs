@@ -45,7 +45,7 @@ repos:
         args: [ "--pytest-test-first" ]
 
   - repo: https://github.com/GideonBear/pre-commit-hooks
-    rev: v1.8.1
+    rev: v1.9.2
     hooks:
       # General
       - id: gha-pin
