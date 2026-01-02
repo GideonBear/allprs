@@ -9,7 +9,7 @@ description = "Approve and merge PRs in bulk"
 readme = "README.md"
 license = "GPL-3.0-only"
 authors = [
-    { name = "GideonBear" },
+    { name = "GideonBear", email = "dig-sultry-sedate@duck.com" },
 ]
 requires-python = ">=3.14"
 classifiers = [
