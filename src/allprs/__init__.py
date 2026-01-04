@@ -60,8 +60,7 @@ def main() -> None:
     args = parse_args()
     runner = Runner(args)
     asyncio.run(runner.run())
-    if runner.quit.is_set():
-        sys.exit(1)
+    sys.exit(runner.exit_code)
 
 
 class DoneType:
@@ -102,6 +101,7 @@ class Runner:
         self.quit = Event()
         self.login = self.gh.rest.users.get_authenticated().parsed_data.login
         self.warnings: list[str] = []
+        self.exit_code = 0
 
     async def run(self) -> None:
         async with asyncio.TaskGroup() as self.follow_tasks:
@@ -305,6 +305,7 @@ class Runner:
             self.queue.task_done()
             if result == "quit":
                 self.quit.set()
+                self.exit_code |= 1
                 return
 
     async def ui_diff_group(  # noqa: C901
@@ -328,6 +329,7 @@ class Runner:
                 webbrowser.open(diff_prs[i].html_url)
                 if fail_example is not None:
                     webbrowser.open(fail_example)
+                self.exit_code |= 1
                 return None
 
         print_diff(diff)
