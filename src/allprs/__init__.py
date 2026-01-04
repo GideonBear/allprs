@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 
 class Args(argparse.Namespace):
-    urls: list[str]
+    urls_or_titles: list[str]
 
 
 def parse_args() -> Args:
@@ -46,17 +46,11 @@ def parse_args() -> Args:
     group = parser.add_mutually_exclusive_group()
 
     group.add_argument(
-        "urls",
+        "urls_or_titles",
         nargs="*",
         type=str,
-        help="When specified, ignore `pr_queries` and merge only these PRs",
-    )
-    group.add_argument(
-        "--title",
-        "-t",
-        type=str,
-        help="When specified, ignore `pr_queries` "
-        "and merge only PRs containing this in the title",
+        help="When specified, ignore `pr_queries` and merge only these PRs. "
+        "Specify URLs or a title substring.",
     )
 
     return parser.parse_args(namespace=Args())
@@ -79,7 +73,19 @@ DONE = DoneType()
 
 class Runner:
     def __init__(self, args: Args) -> None:
-        self.args = args
+        self.urls = None
+        self.title = None
+        if args.urls_or_titles:
+            if all(s.startswith("https://github.com/") for s in args.urls_or_titles):
+                self.urls = args.urls_or_titles
+            else:
+                if len(args.urls_or_titles) > 1:
+                    # TODO(GideonBear): arbitrary restriction  # noqa: FIX002, TD003
+                    print("Error: expected only one title to be specified")
+                    sys.exit(2)
+                # Must be one since it's not empty
+                self.title = args.urls_or_titles[0]
+
         token = (
             subprocess
             .run(["gh", "auth", "token"], check=True, stdout=subprocess.PIPE)  # noqa: S607
@@ -104,8 +110,8 @@ class Runner:
             # We care about this task being lost if we quit,
             # so we need to cancel it (if we quit)
             queue_fill_task: Future[list[None]] | Task[object]
-            if self.args.urls:
-                queue_fill_task = asyncio.create_task(self.do_pr_urls(self.args.urls))
+            if self.urls:
+                queue_fill_task = asyncio.create_task(self.do_pr_urls(self.urls))
             else:
                 queue_fill_task = asyncio.gather(*[
                     self.do_pr_query(pr_query_data) for pr_query_data in pr_queries
@@ -177,7 +183,7 @@ class Runner:
 
         for title, title_prs in title_groups.items():
             # If we specified a title and it's not in here:
-            if self.args.title and self.args.title not in title:
+            if self.title and self.title not in title:
                 continue  # Skip
             diffs = await asyncio.gather(*[self.get_diff(pr) for pr in title_prs])
             diff_groups: dict[str, list[PullRequest]] = {
