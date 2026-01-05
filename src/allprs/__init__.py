@@ -185,26 +185,32 @@ class Runner:
             # If we specified a title and it's not in here:
             if self.title and self.title not in title:
                 continue  # Skip
-            diffs = await asyncio.gather(*[self.get_diff(pr) for pr in title_prs])
-            diff_groups: dict[str, list[PullRequest]] = {
-                k: [x[0] for x in v]
-                for k, v in group_by(
-                    operator.itemgetter(1),
-                    zip(title_prs, diffs, strict=True),
-                ).items()
-            }
 
-            statuses: list[list[tuple[str, str | None]]] = await asyncio.gather(*[
-                asyncio.gather(*[self.wait_for_status(pr) for pr in diff_group])
-                for diff_group in diff_groups.values()
-            ])
+            await self.do_title_group(title, title_prs)
 
-            # Make sure to put an entire title group into the queue at once,
-            # without any awaits in between
-            for (diff, diff_prs), diff_statuses in zip(
-                diff_groups.items(), statuses, strict=True
-            ):
-                self.queue.put_nowait((title, diff, diff_prs, diff_statuses))
+    async def do_title_group(
+        self, title: str, title_prs: Sequence[PullRequest]
+    ) -> None:
+        diffs = await asyncio.gather(*[self.get_diff(pr) for pr in title_prs])
+        diff_groups: dict[str, list[PullRequest]] = {
+            k: [x[0] for x in v]
+            for k, v in group_by(
+                operator.itemgetter(1),
+                zip(title_prs, diffs, strict=True),
+            ).items()
+        }
+
+        statuses: list[list[tuple[str, str | None]]] = await asyncio.gather(*[
+            asyncio.gather(*[self.wait_for_status(pr) for pr in diff_group])
+            for diff_group in diff_groups.values()
+        ])
+
+        # Make sure to put an entire title group into the queue at once,
+        # without any awaits in between
+        for (diff, diff_prs), diff_statuses in zip(
+            diff_groups.items(), statuses, strict=True
+        ):
+            self.queue.put_nowait((title, diff, diff_prs, diff_statuses))
 
     async def wait_for_status(self, pr: PullRequest) -> tuple[str, str | None]:
         while True:
