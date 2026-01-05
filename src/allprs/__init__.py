@@ -229,6 +229,7 @@ class Runner:
                 # If it failed...
                 if state == "failure":
                     # ...and there's a new commit made since the failure...
+                    await asyncio.sleep(2)
                     new_commit = await self.get_last_commit(pr)
                     if commit.sha != new_commit.sha:
                         # ...continue with the new commit
