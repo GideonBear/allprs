@@ -284,7 +284,7 @@ class Runner:
         else:
             raise AssertionError(status_state, check_run_state)
 
-        return (state, fail_example)
+        return state, fail_example
 
     async def get_pr(self, pr_issue: IssueSearchResultItem) -> PullRequest:
         repository = await self.gh.arequest("GET", pr_issue.repository_url)
