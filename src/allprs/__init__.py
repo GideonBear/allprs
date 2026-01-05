@@ -233,6 +233,9 @@ class Runner:
                     if commit.sha != new_commit.sha:
                         # ...continue with the new commit
                         commit = new_commit
+                        # Wait until new checks are started to avoid
+                        #  seeing "success" before any checks were added
+                        await asyncio.sleep(5)
                         continue
                 # We assume any other states will never result in a new commit
                 return state, fail_example
