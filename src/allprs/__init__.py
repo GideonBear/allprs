@@ -3,12 +3,12 @@ from __future__ import annotations
 import argparse
 import asyncio
 import contextlib
-import operator
 import re
 import subprocess
 import sys
 import webbrowser
 from asyncio import Event, Future, Task
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
 from githubkit import GitHub
@@ -70,6 +70,13 @@ class DoneType:
 DONE = DoneType()
 
 
+@dataclass
+class FullPr:
+    pr: PullRequest
+    diff: str
+    status: tuple[str, str | None]
+
+
 class Runner:
     def __init__(self, args: Args) -> None:
         self.urls = None
@@ -93,7 +100,11 @@ class Runner:
         )
         self.gh = GitHub(token)
         self.queue: asyncio.Queue[
-            tuple[str, str, Sequence[PullRequest], Sequence[tuple[str, str | None]]]
+            tuple[
+                str,  # title
+                str,  # diff
+                Sequence[FullPr],
+            ]
             | DoneType
         ] = asyncio.Queue()
         self.follow_tasks: asyncio.TaskGroup
@@ -191,26 +202,21 @@ class Runner:
     async def do_title_group(
         self, title: str, title_prs: Sequence[PullRequest]
     ) -> None:
-        diffs = await asyncio.gather(*[self.get_diff(pr) for pr in title_prs])
-        diff_groups: dict[str, list[PullRequest]] = {
-            k: [x[0] for x in v]
-            for k, v in group_by(
-                operator.itemgetter(1),
-                zip(title_prs, diffs, strict=True),
-            ).items()
-        }
+        # Query the diff only after status checks are done, because new commits can get
+        #  pushed by pre-commit.ci and similar
+        statuses = await asyncio.gather(*[self.wait_for_status(pr) for pr in title_prs])
 
-        statuses: list[list[tuple[str, str | None]]] = await asyncio.gather(*[
-            asyncio.gather(*[self.wait_for_status(pr) for pr in diff_group])
-            for diff_group in diff_groups.values()
-        ])
+        diffs = await asyncio.gather(*[self.get_diff(pr) for pr in title_prs])
+
+        title_prs_full = map(FullPr, title_prs, diffs, statuses, strict=True)
+        diff_groups: dict[str, list[FullPr]] = group_by(
+            lambda x: x.diff, title_prs_full
+        )
 
         # Make sure to put an entire title group into the queue at once,
         # without any awaits in between
-        for (diff, diff_prs), diff_statuses in zip(
-            diff_groups.items(), statuses, strict=True
-        ):
-            self.queue.put_nowait((title, diff, diff_prs, diff_statuses))
+        for diff, diff_prs in diff_groups.items():
+            self.queue.put_nowait((title, diff, diff_prs))
 
     async def wait_for_status(self, pr: PullRequest) -> tuple[str, str | None]:
         while True:
@@ -310,8 +316,8 @@ class Runner:
             x = await self.queue.get()
             if isinstance(x, DoneType):
                 return
-            title, diff, diff_prs, status = x
-            result = await self.ui_diff_group(title, diff, diff_prs, status)
+            title, diff, diff_prs = x
+            result = await self.ui_diff_group(title, diff, diff_prs)
             self.queue.task_done()
             if result == "quit":
                 self.quit.set()
@@ -322,21 +328,21 @@ class Runner:
         self,
         title: str,
         diff: str,
-        diff_prs: Sequence[PullRequest],
-        statuses: Sequence[tuple[str, str | None]],
+        diff_prs: Sequence[FullPr],
     ) -> Literal["quit"] | None:
         def print_header() -> None:
             clear()
             print(title)
-            print(" ".join(pr.base.repo.full_name for pr in diff_prs))
+            print(" ".join(pr.pr.base.repo.full_name for pr in diff_prs))
             print_line()
 
         print_header()
 
-        for i, (status, fail_example) in enumerate(statuses):
+        for pr in diff_prs:
+            status, fail_example = pr.status
             if status != "success":
                 print(f"Status check: {status}! Opening and skipping...")
-                webbrowser.open(diff_prs[i].html_url)
+                webbrowser.open(pr.pr.html_url)
                 if fail_example is not None:
                     webbrowser.open(fail_example)
                 self.exit_code |= 1
@@ -351,11 +357,11 @@ class Runner:
             if answer == "a":
                 for pr in diff_prs:
                     # Already added to a task group, so no need to keep a reference here
-                    _ = self.follow_tasks.create_task(self.merge(pr))
+                    _ = self.follow_tasks.create_task(self.merge(pr.pr))
                 break
             if answer == "o":
                 print("Opening random PR from diff group...")
-                webbrowser.open(diff_prs[0].html_url)
+                webbrowser.open(diff_prs[0].pr.html_url)
             elif answer == "s":
                 break
             # elif answer == "c":
