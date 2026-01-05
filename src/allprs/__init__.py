@@ -219,11 +219,22 @@ class Runner:
             self.queue.put_nowait((title, diff, diff_prs))
 
     async def wait_for_status(self, pr: PullRequest) -> tuple[str, str | None]:
+        commit = await self.get_last_commit(pr)
         while True:
-            state, fail_example = await self.get_status(pr)
+            state, fail_example = await self.get_status(pr, commit)
             if state == "pending":
                 await asyncio.sleep(5)
             else:
+                # Because new commits can get pushed by pre-commit.ci and similar:
+                # If it failed...
+                if state == "failure":
+                    # ...and there's a new commit made since the failure...
+                    new_commit = await self.get_last_commit(pr)
+                    if commit.sha != new_commit.sha:
+                        # ...continue with the new commit
+                        commit = new_commit
+                        continue
+                # We assume any other states will never result in a new commit
                 return state, fail_example
 
     async def get_last_commit(self, pr: PullRequest) -> Commit:
@@ -238,10 +249,11 @@ class Runner:
             )
         ][-1]
 
-    async def get_status(self, pr: PullRequest) -> tuple[str, str | None]:
+    async def get_status(
+        self, pr: PullRequest, commit: Commit
+    ) -> tuple[str, str | None]:
         # TODO(GideonBear): Refactor and split up this function  # noqa: FIX002, TD003
         assert pr.base.repo.owner is not None  # noqa: S101
-        commit = await self.get_last_commit(pr)
 
         status = await self.gh.rest.repos.async_get_combined_status_for_ref(
             owner=pr.base.repo.owner.login,
