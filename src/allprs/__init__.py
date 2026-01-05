@@ -214,10 +214,9 @@ class Runner:
             else:
                 return state, fail_example
 
-    async def get_status(self, pr: PullRequest) -> tuple[str, str | None]:
-        # TODO(GideonBear): Refactor and split up this function  # noqa: FIX002, TD003
+    async def get_last_commit(self, pr: PullRequest) -> Commit:
         assert pr.base.repo.owner is not None  # noqa: S101
-        commit: Commit = [  # type: ignore[var-annotated]
+        return [  # type: ignore[var-annotated, no-any-return]
             x
             async for x in self.gh.rest.paginate(
                 self.gh.rest.pulls.async_list_commits,
@@ -226,6 +225,11 @@ class Runner:
                 pull_number=pr.number,
             )
         ][-1]
+
+    async def get_status(self, pr: PullRequest) -> tuple[str, str | None]:
+        # TODO(GideonBear): Refactor and split up this function  # noqa: FIX002, TD003
+        assert pr.base.repo.owner is not None  # noqa: S101
+        commit = await self.get_last_commit(pr)
 
         status = await self.gh.rest.repos.async_get_combined_status_for_ref(
             owner=pr.base.repo.owner.login,
