@@ -115,6 +115,7 @@ repos:
         pass_filenames: false # Check all files to be thorough
         args: # Removes default `--ignore-missing-imports`
           - .
+          - -v
         additional_dependencies:
           - githubkit==0.14.1
           - prompt-toolkit==3.0.52
