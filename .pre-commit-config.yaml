@@ -119,7 +119,7 @@ repos:
         args: # Removes default `--ignore-missing-imports`
           - .
         additional_dependencies:
-          - githubkit==0.14.1
+          - githubkit==0.14.2
           - prompt-toolkit==3.0.52
 
   - repo: https://github.com/tox-dev/pyproject-fmt
