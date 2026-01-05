@@ -45,7 +45,7 @@ repos:
         args: [ "--pytest-test-first" ]
 
   - repo: https://github.com/GideonBear/pre-commit-hooks
-    rev: v1.9.2
+    rev: v1.11.1
     hooks:
       # General
       - id: gha-pin
@@ -88,7 +88,7 @@ repos:
   # Gha
 
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.9
+    rev: v1.7.10
     hooks:
       - id: actionlint
 
@@ -134,6 +134,6 @@ repos:
         args: [ "src" ]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.9.18
+    rev: 0.9.21
     hooks:
       - id: uv-lock
