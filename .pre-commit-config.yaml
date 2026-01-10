@@ -137,3 +137,8 @@ repos:
     rev: 0.9.21
     hooks:
       - id: uv-lock
+
+  - repo: https://github.com/sco1/pre-commit-python-eol
+    rev: v2025.12.1
+    hooks:
+      - id: check-eol-cached
