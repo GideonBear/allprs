@@ -1,4 +1,4 @@
-name: 'Lint PR'
+name: Lint PR
 
 on:
   pull_request_target: # zizmor: ignore[dangerous-triggers] this is the only way, and we're not running user code
@@ -7,8 +7,7 @@ on:
       - edited
       - reopened
       - synchronize
-
-permissions: { }
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
