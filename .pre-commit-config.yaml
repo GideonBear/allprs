@@ -45,8 +45,9 @@ repos:
     rev: v1.11.1
     hooks:
       # General
-      - id: gha-pin
       - id: pre-commit-ci-skip
+      # Gha
+      - id: gha-pin
       # Python
       - id: pre-commit-additional-dependencies
       - id: requires-python
