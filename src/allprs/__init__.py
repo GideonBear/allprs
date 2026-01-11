@@ -184,7 +184,8 @@ class Runner:
 
     async def get_pr_from_url(self, url: str) -> PullRequest:
         url = url.removeprefix("https://github.com/")
-        owner, repo, _pull, number, *_rest = url.split("/")
+        url, *_ = url.split("#", maxsplit=1)
+        owner, repo, _pull, number, *_rest = url.split("/", maxsplit=4)
         return (
             await self.gh.rest.pulls.async_get(owner, repo, int(number))
         ).parsed_data
