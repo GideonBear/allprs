@@ -413,12 +413,18 @@ class Runner:
     async def merge(self, pr: PullRequest) -> None:
         assert pr.base.repo.owner is not None  # noqa: S101
         if pr.user.login != self.login:
-            await self.gh.rest.pulls.async_create_review(
-                owner=pr.base.repo.owner.login,
-                repo=pr.base.repo.name,
-                pull_number=pr.number,
-                event="APPROVE",
-            )
+            try:
+                await self.gh.rest.pulls.async_create_review(
+                    owner=pr.base.repo.owner.login,
+                    repo=pr.base.repo.name,
+                    pull_number=pr.number,
+                    event="APPROVE",
+                )
+            except RequestFailed as err:
+                self.warnings.append(
+                    f"Failed to approve, and thus didn't merge, {pr.html_url}: {err}"
+                )
+                return
 
         try:
             await self.gh.rest.pulls.async_merge(
@@ -431,7 +437,11 @@ class Runner:
             self.warnings.append(f"Failed to merge {pr.html_url}: {err}")
             return
 
-        await self.delete_branch(pr)
+        try:
+            await self.delete_branch(pr)
+        except RequestFailed as err:
+            self.warnings.append(f"Failed to delete branch for {pr.html_url}: {err}")
+            return
 
     async def delete_branch(self, pr: PullRequest, *, force: bool = False) -> None:
         assert pr.base.repo.owner is not None  # noqa: S101
