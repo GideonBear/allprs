@@ -11,6 +11,7 @@ from asyncio import Event, Future, Task
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
+from ghtoken import get_ghtoken
 from githubkit import GitHub
 from githubkit.exception import RequestFailed
 from prompt_toolkit.input import create_input
@@ -92,12 +93,7 @@ class Runner:
                 # Must be one since it's not empty
                 self.title = args.urls_or_titles[0]
 
-        token = (
-            subprocess
-            .run(["gh", "auth", "token"], check=True, stdout=subprocess.PIPE)  # noqa: S607
-            .stdout.decode()
-            .strip()
-        )
+        token = get_ghtoken()
         self.gh = GitHub(token)
         self.queue: asyncio.Queue[
             tuple[
