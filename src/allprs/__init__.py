@@ -71,9 +71,12 @@ class DoneType:
 DONE = DoneType()
 
 
+type PullRequesta = PullRequest
+
+
 @dataclass
 class FullPr:
-    pr: PullRequest
+    pr: PullRequesta
     diff: str
     status: tuple[str, str | None]
 
