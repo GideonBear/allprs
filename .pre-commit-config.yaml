@@ -2,6 +2,8 @@ minimum_pre_commit_version: 4.2.0
 
 ci:
   autoupdate_commit_msg: "chore(pre-commit): autoupdate"
+  skip:
+    - mypy  # See .github/workflows/mypy.yml
 
 repos:
   # Multi

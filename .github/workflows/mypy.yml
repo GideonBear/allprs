@@ -1,0 +1,51 @@
+name: mypy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  main:
+    name: mypy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # actions/checkout
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: 3.x
+
+      # From https://github.com/pre-commit/action/blob/main/action.yml
+
+      - run: python -m pip install pre-commit
+
+      - run: python -m pip freeze --local
+
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
+      # This is mostly for githubkit, which takes mypy 90s to process
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .mypy_cache
+          # uv.lock is indirectly used by .pre-commit-config.yaml. This is mostly to refresh
+          #  the cache when githubkit updates.
+          key: mypy_cache|${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            mypy_cache
+
+      - run: pre-commit run --show-diff-on-failure --color=always --all-files mypy
