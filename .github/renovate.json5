@@ -4,10 +4,8 @@
         "config:best-practices",
         ":semanticCommits",
         ":semanticCommitTypeAll(chore)",
+        ":maintainLockFilesWeekly",
     ],
-    lockFileMaintenance: {
-        enabled: true,
-    },
     packageRules: [
         {
             matchDepTypes: [
