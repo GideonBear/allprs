@@ -29,9 +29,7 @@ jobs:
 
       # From https://github.com/pre-commit/action/blob/main/action.yml
 
-      - run: python -m pip install pre-commit
-
-      - run: python -m pip freeze --local
+      - run: pip install pre-commit
 
       - uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
