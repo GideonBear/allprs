@@ -1,5 +1,9 @@
 name: Lint PR
 
+# zizmor: ignore[concurrency-limits] this workflow only runs for a few seconds. If we cancel-in-progress, the check on the commit
+#  might get canceled in favor of the check on the PR edit, causing `allprs` to fail. `cancel-in-progress: false` doesn't help,
+#  and we just want it done as fast as possible.
+
 on:
   pull_request_target: # zizmor: ignore[dangerous-triggers] this is the only way, and we're not running user code
     types:
@@ -9,10 +13,6 @@ on:
       - synchronize
 
 permissions: {}
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 jobs:
   main:
