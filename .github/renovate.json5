@@ -12,7 +12,7 @@
                 "requires-python",
             ],
             rangeStrategy: "bump",
-            extractVersion: "^(?<version>\d+\.\d+)",
+            extractVersion: "^(?<version>d+.d+)",
         },
     ],
 }
