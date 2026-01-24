@@ -12,13 +12,7 @@
                 "requires-python",
             ],
             rangeStrategy: "bump",
-        },
-        {
-            matchDepTypes: [
-                "requires-python",
-            ],
-            matchUpdateTypes: "patch",
-            enabled: false,
+            extractVersion: "^(?<version>\d+\.\d+)",
         },
     ],
 }
