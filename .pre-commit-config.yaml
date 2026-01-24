@@ -52,7 +52,6 @@ repos:
       - id: gha-pin
       # Python
       - id: pre-commit-additional-dependencies
-      - id: requires-python
       # General - post
       - id: pre-commit-config-fmt
 
