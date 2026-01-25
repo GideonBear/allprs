@@ -14,7 +14,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ghtoken", specifier = ">=0.1.2" },
+    { name = "ghtoken", specifier = "==0.1.1" },
     { name = "githubkit", specifier = ">=0.13.6" },
     { name = "prompt-toolkit", specifier = ">=3.0.52" },
 ]
