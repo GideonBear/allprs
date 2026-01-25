@@ -63,15 +63,15 @@ wheels = [
 
 [[package]]
 name = "ghtoken"
-version = "0.1.2"
+version = "0.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dotenv" },
     { name = "ruamel-yaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a5/b2/758bceafb71b562d80d325839ba0bd9740ba369ab8572f4508605551bf73/ghtoken-0.1.2.tar.gz", hash = "sha256:4369b0052efb91109391b5f4f797cd5fa6a2a3ac436b6d11205fd992de02adef", size = 12669, upload-time = "2024-06-13T13:06:07.207Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/15/1f/79fc10bdfd8cc7c7f4d8ab7b75d4e0ef2ce96a6effb120e7d2723a76d3e2/ghtoken-0.1.1.tar.gz", hash = "sha256:f1ca79d8660687a476f02b7ee6e8d3e07aa845ed82bd119e1722e98de4bf6ead", size = 12579, upload-time = "2024-06-12T19:13:33.592Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/90/c7/56f14aa2725c92aba0a14dd638405a497275a439944f1c96b3719b3fc7eb/ghtoken-0.1.2-py3-none-any.whl", hash = "sha256:759242a6937d087f77d43a9207751f8e81a034e6f8c22937bc06b126b2357ad4", size = 9393, upload-time = "2024-06-13T13:06:05.96Z" },
+    { url = "https://files.pythonhosted.org/packages/7d/2a/70475e0ab17f19d98e43f65b7ac9c718f1d75c03d7062eb8505e0965b181/ghtoken-0.1.1-py3-none-any.whl", hash = "sha256:8cf595673b261f565ccc4bc2182e555a24637fbd5bc6d12095f9d39f9b602813", size = 9393, upload-time = "2024-06-12T19:13:32.387Z" },
 ]
 
 [[package]]
