@@ -97,6 +97,11 @@ repos:
       - id: zizmor
         args: [--persona=auditor]
         exclude: ^.github/workflows/release.yml$
+      - id: zizmor
+        alias: zizmor-fix
+        stages: [manual]
+        args: [--persona=auditor, --fix=all]
+        exclude: ^.github/workflows/release.yml$
 
   # Python
 
