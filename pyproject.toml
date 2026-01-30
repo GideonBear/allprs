@@ -26,7 +26,7 @@ dependencies = [
 urls.bugs = "https://github.com/GideonBear/allprs/issues"
 urls.homepage = "https://github.com/GideonBear/allprs"
 
-scripts.allprs = "allprs:main"
+scripts.allprs = "allprs.main:main"
 
 [tool.ruff]
 format.preview = true
@@ -40,7 +40,6 @@ lint.ignore = [
     "D203",   # Choose D203 or D211
     "D212",   # Choose D212 or D213
     "ERA001", # (project) TODO: Temporarily allowed
-    "RUF067", # For apps I disagree
     "S404",   # Uses of subprocess are rejected, no need to reject the imports as well
     "T201",   # (project) Print is allowed
 ]
