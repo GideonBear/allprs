@@ -418,7 +418,7 @@ class Runner:
                 )
             except RequestFailed as err:
                 self.warnings.append(
-                    f"Failed to approve, and thus didn't merge, {pr.html_url}: {err}"
+                    f"Failed to approve, and thus didn't merge, {pr.html_url} : {err}"
                 )
                 return
 
@@ -430,13 +430,13 @@ class Runner:
                 merge_method="squash",
             )
         except RequestFailed as err:
-            self.warnings.append(f"Failed to merge {pr.html_url}: {err}")
+            self.warnings.append(f"Failed to merge {pr.html_url} : {err}")
             return
 
         try:
             await self.delete_branch(pr)
         except RequestFailed as err:
-            self.warnings.append(f"Failed to delete branch for {pr.html_url}: {err}")
+            self.warnings.append(f"Failed to delete branch for {pr.html_url} : {err}")
             return
 
     async def delete_branch(self, pr: PullRequest, *, force: bool = False) -> None:
