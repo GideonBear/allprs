@@ -22,17 +22,13 @@ dependencies = [
     "githubkit>=0.13.6",
     "prompt-toolkit>=3.0.52",
 ]
-
 urls.bugs = "https://github.com/GideonBear/allprs/issues"
 urls.homepage = "https://github.com/GideonBear/allprs"
-
 scripts.allprs = "allprs.main:main"
 
 [tool.ruff]
 format.preview = true
-
 lint.select = [ "ALL" ]
-
 lint.ignore = [
     "COM812", # Conflict with formatter
     "CPY",    # No copyright statements
@@ -43,7 +39,6 @@ lint.ignore = [
     "S404",   # Uses of subprocess are rejected, no need to reject the imports as well
     "T201",   # (project) Print is allowed
 ]
-
 lint.per-file-ignores."tests/**/*.py" = [
     "E501",    # If the formatter doesn't fix the line length, it's good enough
     "FBT",     # We don't care about boolean parameters in tests
@@ -51,28 +46,22 @@ lint.per-file-ignores."tests/**/*.py" = [
     "PLR2004", # Magic values are allowed in tests
     "S101",    # Assert is allowed in tests
 ]
-
-lint.flake8-tidy-imports.ban-relative-imports = "all" # For consistency
-
+lint.flake8-tidy-imports.ban-relative-imports = "all"  # For consistency
 lint.isort.combine-as-imports = true
 lint.isort.lines-after-imports = 2
 lint.isort.required-imports = [ "from __future__ import annotations" ]
-
 lint.preview = true
 
 [tool.pyproject-fmt]
 indent = 4
 
 [tool.mypy]
-exclude = '^tests/'
+exclude = "^tests/"
 show_error_context = true
 show_error_codes = true
 pretty = true
-
 warn_unused_configs = true
-
-strict = true # All strict checks are already listed below, only here for future-proofing
-
+strict = true  # All strict checks are already listed below, only here for future-proofing
 # It already warns for the import, so we do not want to warn for each individual use.
 # If the import is silenced, there's nothing else we can do so silence the uses as well.
 # disallow_any_unimported = true
@@ -80,25 +69,21 @@ disallow_any_decorated = true
 disallow_any_explicit = true
 disallow_any_generics = true
 disallow_subclassing_any = true
-
 disallow_untyped_calls = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
 disallow_untyped_decorators = true
-
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 warn_return_any = true
 warn_unreachable = true
-
 extra_checks = true
 implicit_reexport = false
 strict_concatenate = true
 strict_equality = true
 strict_bytes = true
-
 enable_error_code = [
     "redundant-self",
     "deprecated",
