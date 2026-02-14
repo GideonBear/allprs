@@ -104,10 +104,12 @@ class Runner:
         token = get_ghtoken()
         self.gh = GitHub(token)
         self.queue: asyncio.Queue[
-            tuple[
-                str,  # title
-                str,  # diff
-                Sequence[FullPr],
+            list[
+                tuple[
+                    str,  # title
+                    str,  # diff
+                    Sequence[FullPr],
+                ]
             ]
             | DoneType
         ] = asyncio.Queue()
@@ -220,8 +222,9 @@ class Runner:
 
         # Make sure to put an entire title group into the queue at once,
         # without any awaits in between
-        for diff, diff_prs in diff_groups.items():
-            self.queue.put_nowait((title, diff, diff_prs))
+        self.queue.put_nowait([
+            (title, diff, diff_prs) for diff, diff_prs in diff_groups.items()
+        ])
 
     async def wait_for_status(self, pr: PullRequest) -> tuple[str, str | None]:
         commit = await self.get_last_commit(pr)
@@ -334,23 +337,37 @@ class Runner:
         while True:
             clear()
             print("Waiting for diffgroup...")
-            x = await self.queue.get()
-            if isinstance(x, DoneType):
+            title_group = await self.queue.get()
+            if isinstance(title_group, DoneType):
                 return
-            title, diff, diff_prs = x
-            result = await self.ui_diff_group(title, diff, diff_prs)
-            self.queue.task_done()
-            if result == "quit":
-                self.quit.set()
-                self.exit_code |= 1
-                return
+
+            while title_group:
+                title, diff, diff_prs = title_group[-1]
+                result = await self.ui_diff_group(title, diff, diff_prs)
+                self.queue.task_done()
+                if result == "quit":
+                    self.quit.set()
+                    self.exit_code |= 1
+                    return
+                if result == "close":
+                    # Close all remaining PRs in the title group
+                    for _title, _diff, diff_prs in title_group:
+                        for pr in diff_prs:
+                            # Already added to a task group,
+                            #  so no need to keep a reference here
+                            _ = self.follow_tasks.create_task(self.close(pr.pr))
+                    break
+
+                # Pop afterwards so the current diff group
+                #  is included in the PRs to close
+                title_group.pop()
 
     async def ui_diff_group(  # noqa: C901
         self,
         title: str,
         diff: str,
         diff_prs: Sequence[FullPr],
-    ) -> Literal["quit"] | None:
+    ) -> Literal["quit", "close"] | None:
         def print_header() -> None:
             clear()
             print(title)
@@ -375,43 +392,33 @@ class Runner:
         print()
 
         while True:
-            answer = await areadchar("(a)ccept/(o)pen/(s)kip/(q)uit ")
+            answer = await areadchar("(a)ccept/(c)lose/(o)pen/(s)kip/(q)uit ")
             print()
             if answer == "a":
                 for pr in diff_prs:
                     # Already added to a task group, so no need to keep a reference here
                     _ = self.follow_tasks.create_task(self.merge(pr.pr))
                 break
+            if answer == "c":
+                if (
+                    await areadchar(
+                        "This will close all PRs in the **titlegroup**. "
+                        "Are you sure? (y/n) "
+                    )
+                    != "y"
+                ):
+                    continue
+                return "close"
             if answer == "o":
                 print("Opening random PR from diff group...")
                 webbrowser.open(diff_prs[0].pr.html_url)
-            elif answer == "s":
+                continue
+            if answer == "s":
                 break
-            # elif answer == "c":
-            #     done = False
-            #     while True:
-            #         print("(t)itlegroup/(d)iffgroup/(c)ancel ", end="")
-            #         sys.stdout.flush()
-            #         answer = readchar()
-            #         print()
-            #         if answer == "t":
-            #             ret = CLOSE_TITLEGROUP
-            #             answer = "d"
-            #         if answer == "d":
-            #             for pr in diff_prs:
-            #                 print(f"Closing for {pr.base.repo.full_name}...")
-            #                 pr.edit(state="closed")
-            #         elif answer == "c":
-            #             break
-            #         else:
-            #             print("Invalid answer")
-            #
-            #     if done:
-            #         break
-            elif answer == "q":
+            if answer == "q":
                 return "quit"
-            else:
-                print("Invalid answer")
+
+            print("Invalid answer")
 
         clear()
         return None
@@ -442,6 +449,27 @@ class Runner:
         except RequestFailed as err:
             self.warnings.append(f"Failed to merge {pr.html_url} : {err}")
             return
+
+        try:
+            await self.delete_branch(pr)
+        except RequestFailed as err:
+            self.warnings.append(f"Failed to delete branch for {pr.html_url} : {err}")
+            return
+
+    async def close(self, pr: PullRequest) -> None:
+        assert pr.base.repo.owner is not None  # noqa: S101
+        try:
+            await self.gh.rest.pulls.async_update(
+                owner=pr.base.repo.owner.login,
+                repo=pr.base.repo.name,
+                pull_number=pr.number,
+                state="closed",
+            )
+        except RequestFailed as err:
+            self.warnings.append(f"Failed to close {pr.html_url} : {err}")
+            return
+
+        self.warnings.append(f"Closed {pr.html_url}")
 
         try:
             await self.delete_branch(pr)
