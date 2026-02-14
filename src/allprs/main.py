@@ -44,9 +44,7 @@ class Args(argparse.Namespace):
 def parse_args() -> Args:
     parser = argparse.ArgumentParser("allprs")
 
-    group = parser.add_mutually_exclusive_group()
-
-    group.add_argument(
+    parser.add_argument(
         "urls_or_titles",
         nargs="*",
         type=str,
