@@ -52,6 +52,15 @@ def parse_args() -> Args:
         "Specify URLs or a title substring.",
     )
 
+    parser.add_argument(
+        "--no-skip-fail",
+        "-f",
+        action="store_false",
+        dest="skip_fail",
+        help="Don't skip PRs with failing checks. You will see a warning when "
+        "checks are failing.",
+    )
+
     return parser.parse_args(namespace=Args())
 
 
@@ -78,6 +87,7 @@ class FullPr:
 
 class Runner:
     def __init__(self, args: Args) -> None:
+        self.args = args
         self.urls = None
         self.title = None
         if args.urls_or_titles:
@@ -352,12 +362,14 @@ class Runner:
         for pr in diff_prs:
             status, fail_example = pr.status
             if status != "success":
-                print(f"Status check: {status}! Opening and skipping...")
-                webbrowser.open(pr.pr.html_url)
-                if fail_example is not None:
-                    webbrowser.open(fail_example)
-                self.exit_code |= 1
-                return None
+                if self.args.skip_fail:
+                    print(f"Status check: {status}! Opening and skipping...")
+                    webbrowser.open(pr.pr.html_url)
+                    if fail_example is not None:
+                        webbrowser.open(fail_example)
+                    self.exit_code |= 1
+                    return None
+                print(f"WARNING! Status check: {status} for {pr.pr.html_url}")
 
         print_diff(diff)
         print()
