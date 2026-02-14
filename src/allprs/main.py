@@ -468,6 +468,7 @@ class Runner:
                     f"Head branch of PR {pr.html_url} is referenced "
                     f"by open pull requests, didn't delete it"
                 )
+                return
         await self.gh.rest.git.async_delete_ref(
             owner=pr.head.repo.owner.login,
             repo=pr.head.repo.name,
