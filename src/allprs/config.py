@@ -12,6 +12,7 @@ if path.exists():
 else:
     data = {}
 
+
 repo_query = data.pop("repo_query", "user:@me archived:false")
 repo_query_extend = data.pop("repo_query_extend", None)
 if repo_query_extend:
@@ -27,6 +28,7 @@ pr_queries = data.pop(
     ],
 )
 pr_queries.extend(data.pop("pr_queries_extend", ()))
+
 
 if data:
     print(f"ERROR: found extra configuration key(s): {', '.join(data)}")
