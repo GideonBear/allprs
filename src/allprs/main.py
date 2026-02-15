@@ -64,11 +64,11 @@ def parse_args() -> Args:
     return parser.parse_args(namespace=Args())
 
 
-def main() -> None:
+def main() -> int:
     args = parse_args()
     runner = Runner(args)
     asyncio.run(runner.run())
-    sys.exit(runner.exit_code)
+    return runner.exit_code
 
 
 class DoneType:
