@@ -344,11 +344,10 @@ class Runner:
             while title_group:
                 title, diff, diff_prs = title_group[-1]
                 result = await self.ui_diff_group(title, diff, diff_prs)
-                self.queue.task_done()
                 if result == "quit":
                     self.quit.set()
                     self.exit_code |= 1
-                    return
+                    break
                 if result == "close":
                     # Close all remaining PRs in the title group
                     for _title, _diff, diff_prs in title_group:
@@ -361,6 +360,8 @@ class Runner:
                 # Pop afterwards so the current diff group
                 #  is included in the PRs to close
                 title_group.pop()
+
+            self.queue.task_done()
 
     async def ui_diff_group(  # noqa: C901
         self,
