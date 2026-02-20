@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING, Literal
 from ghtoken import get_ghtoken
 from githubkit import GitHub
 from githubkit.exception import RequestFailed
-from prompt_toolkit.input import create_input
 
 from allprs import config
 from allprs.config import pr_queries
@@ -114,7 +113,6 @@ class Runner:
             | DoneType
         ] = asyncio.Queue()
         self.follow_tasks: asyncio.TaskGroup
-        self.input = create_input()
         self.quit = Event()
         self.login = self.gh.rest.users.get_authenticated().parsed_data.login
         self.warnings: list[str] = []
