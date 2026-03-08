@@ -96,12 +96,10 @@ repos:
     hooks:
       - id: zizmor
         args: [--no-progress, --persona=auditor]
-        exclude: ^.github/workflows/release.yml$
       - id: zizmor
         alias: zizmor-fix
         stages: [manual]
         args: [--no-progress, --persona=auditor, --fix=all]
-        exclude: ^.github/workflows/release.yml$
 
   # Python
 
