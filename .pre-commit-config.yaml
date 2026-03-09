@@ -58,7 +58,7 @@ repos:
   # General
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
       - id: codespell
         args: [--write-changes]
@@ -92,7 +92,7 @@ repos:
       - id: actionlint
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.22.0
+    rev: v1.23.1
     hooks:
       - id: zizmor
         args: [--no-progress, --persona=auditor]
@@ -104,7 +104,7 @@ repos:
   # Python
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.4
+    rev: v0.15.5
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -140,7 +140,7 @@ repos:
         args: [src]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.10.7
+    rev: 0.10.9
     hooks:
       - id: uv-lock
 
