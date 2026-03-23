@@ -332,7 +332,7 @@ class Runner:
         )
 
     async def ui(self) -> None:
-        while True:
+        while not self.quit.is_set():
             clear()
             print("Waiting for diffgroup...")
             title_group = await self.queue.get()
