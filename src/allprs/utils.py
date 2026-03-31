@@ -10,7 +10,7 @@ from prompt_toolkit.patch_stdout import patch_stdout
 
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable
+    from collections.abc import Callable, Iterable, Mapping
 
 
 def group_by[T, U](f: Callable[[T], U], it: Iterable[T]) -> dict[U, list[T]]:
@@ -40,3 +40,13 @@ async def areadchar(prompt: str = "") -> str:
     session: PromptSession[str] = PromptSession()
     with patch_stdout():
         return await session.prompt_async(prompt, key_bindings=kb)
+
+
+def prompt(keybinds: Mapping[str, str]) -> str:
+    return (
+        "/".join(
+            f"({key}){value[1:]}" if value[0] == key else f"({key}) {value}"
+            for key, value in keybinds.items()
+        )
+        + " "
+    )

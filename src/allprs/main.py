@@ -22,6 +22,7 @@ from allprs.utils import (
     clear,
     group_by,
     print_line,
+    prompt,
 )
 
 
@@ -361,7 +362,7 @@ class Runner:
 
             self.queue.task_done()
 
-    async def ui_diff_group(  # noqa: C901
+    async def ui_diff_group(  # noqa: C901, PLR0912
         self,
         title: str,
         diff: str,
@@ -391,33 +392,40 @@ class Runner:
         print()
 
         while True:
-            answer = await areadchar("(a)ccept/(c)lose/(o)pen/(s)kip/(q)uit ")
+            answer = await areadchar(prompt(config.keybinds))
             print()
-            if answer == "a":
-                for pr in diff_prs:
-                    # Already added to a task group, so no need to keep a reference here
-                    _ = self.follow_tasks.create_task(self.merge(pr.pr))
-                break
-            if answer == "c":
-                if (
-                    await areadchar(
-                        "This will close all PRs in the **titlegroup**. "
-                        "Are you sure? (y/n) "
-                    )
-                    != "y"
-                ):
-                    continue
-                return "close"
-            if answer == "o":
-                print("Opening random PR from diff group...")
-                webbrowser.open(diff_prs[0].pr.html_url)
+            try:
+                action = config.keybinds[answer]
+            except KeyError:
+                print("Invalid answer")
                 continue
-            if answer == "s":
-                break
-            if answer == "q":
-                return "quit"
 
-            print("Invalid answer")
+            # Mypy checks that this is exhaustive
+            match action:
+                case "accept":
+                    for pr in diff_prs:
+                        # Already added to a task group,
+                        #  so no need to keep a reference here
+                        _ = self.follow_tasks.create_task(self.merge(pr.pr))
+                    break
+                case "close":
+                    if (
+                        await areadchar(
+                            "This will close all PRs in the **titlegroup**. "
+                            "Are you sure? (y/n) "
+                        )
+                        != "y"
+                    ):
+                        continue
+                    return "close"
+                case "open":
+                    print("Opening random PR from diff group...")
+                    webbrowser.open(diff_prs[0].pr.html_url)
+                    continue
+                case "skip":
+                    break
+                case "quit":
+                    return "quit"
 
         clear()
         return None

@@ -3,6 +3,12 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from typing import Literal, NoReturn
+
+
+def error(s: str) -> NoReturn:
+    print(f"ERROR: {s}")
+    sys.exit(2)
 
 
 path = Path.home() / ".allprs.json"
@@ -29,7 +35,25 @@ pr_queries = data.pop(
 )
 pr_queries.extend(data.pop("pr_queries_extend", ()))
 
+type Action = Literal["accept", "close", "open", "skip", "quit"]
+keybinds: dict[str, Action] = {
+    "a": "accept",
+    "c": "close",
+    "o": "open",
+    "s": "skip",
+    "q": "quit",
+}
+orig_values = set(keybinds.values())
+kb: str
+val: str | None
+for kb, val in data.pop("keybinds", {}).items():
+    if val is None:
+        keybinds.pop(kb)
+    elif val not in orig_values:
+        error(f"found unrecognized action for keybind '{kb}': '{val}'")
+    else:
+        keybinds[kb] = val  # type: ignore[assignment]  # checked above via orig_values
+
 
 if data:
-    print(f"ERROR: found extra configuration key(s): {', '.join(data)}")
-    sys.exit(2)
+    error(f"found extra configuration key(s): {', '.join(data)}")
