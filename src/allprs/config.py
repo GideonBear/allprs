@@ -56,4 +56,4 @@ for kb, val in data.pop("keybinds", {}).items():
 
 
 if data:
-    error(f"found extra configuration key(s): {', '.join(data)}")
+    error(f"found extra configuration key(s): {", ".join(data)}")
