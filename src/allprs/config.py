@@ -52,7 +52,7 @@ for kb, val in data.pop("keybinds", {}).items():
     elif val not in orig_values:
         error(f"found unrecognized action for keybind '{kb}': '{val}'")
     else:
-        keybinds[kb] = val  # type: ignore[assignment]  # checked above via orig_values
+        keybinds[kb] = val
 
 
 if data:
