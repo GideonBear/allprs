@@ -22,7 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "ghtoken>=0.1.2",
-    "githubkit>=0.13.6",
+    "githubkit>=0.16",
     "prompt-toolkit>=3.0.52",
 ]
 urls.bugs = "https://github.com/GideonBear/allprs/issues"
