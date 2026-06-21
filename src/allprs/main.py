@@ -29,7 +29,7 @@ from allprs.utils import (
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
 
-    from githubkit.versions.latest.models import (
+    from githubkit_schemas.latest.models import (
         CheckRun,
         Commit,
         IssueSearchResultItem,
