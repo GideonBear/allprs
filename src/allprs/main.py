@@ -95,7 +95,7 @@ class Runner:
                 self.urls = args.urls_or_titles
             else:
                 if len(args.urls_or_titles) > 1:
-                    # TODO(GideonBear): arbitrary restriction  # noqa: FIX002, TD003
+                    # TODO(GideonBear): arbitrary restriction  # ruff:ignore[line-contains-todo, missing-todo-link]
                     print("Error: expected only one title to be specified")
                     sys.exit(2)
                 # Must be one since it's not empty
@@ -249,7 +249,7 @@ class Runner:
                 return state, fail_example
 
     async def get_last_commit(self, pr: PullRequest) -> Commit:
-        assert pr.base.repo.owner is not None  # noqa: S101
+        assert pr.base.repo.owner is not None  # ruff:ignore[assert]
         return [  # type: ignore[var-annotated, no-any-return]
             x
             async for x in self.gh.rest.paginate(
@@ -263,8 +263,8 @@ class Runner:
     async def get_status(
         self, pr: PullRequest, commit: Commit
     ) -> tuple[str, str | None]:
-        # TODO(GideonBear): Refactor and split up this function  # noqa: FIX002, TD003
-        assert pr.base.repo.owner is not None  # noqa: S101
+        # TODO(GideonBear): Refactor and split up this function  # ruff:ignore[line-contains-todo, missing-todo-link]
+        assert pr.base.repo.owner is not None  # ruff:ignore[assert]
 
         status = await self.gh.rest.repos.async_get_combined_status_for_ref(
             owner=pr.base.repo.owner.login,
@@ -362,7 +362,7 @@ class Runner:
 
             self.queue.task_done()
 
-    async def ui_diff_group(  # noqa: C901, PLR0912
+    async def ui_diff_group(  # ruff:ignore[complex-structure, too-many-branches]
         self,
         title: str,
         diff: str,
@@ -431,7 +431,7 @@ class Runner:
         return None
 
     async def merge(self, pr: PullRequest) -> None:
-        assert pr.base.repo.owner is not None  # noqa: S101
+        assert pr.base.repo.owner is not None  # ruff:ignore[assert]
         if pr.user.login != self.login:
             try:
                 await self.gh.rest.pulls.async_create_review(
@@ -464,7 +464,7 @@ class Runner:
             return
 
     async def close(self, pr: PullRequest) -> None:
-        assert pr.base.repo.owner is not None  # noqa: S101
+        assert pr.base.repo.owner is not None  # ruff:ignore[assert]
         try:
             await self.gh.rest.pulls.async_update(
                 owner=pr.base.repo.owner.login,
@@ -485,9 +485,9 @@ class Runner:
             return
 
     async def delete_branch(self, pr: PullRequest, *, force: bool = False) -> None:
-        assert pr.base.repo.owner is not None  # noqa: S101
-        assert pr.head.repo is not None  # noqa: S101
-        assert pr.head.repo.owner is not None  # noqa: S101
+        assert pr.base.repo.owner is not None  # ruff:ignore[assert]
+        assert pr.head.repo is not None  # ruff:ignore[assert]
+        assert pr.head.repo.owner is not None  # ruff:ignore[assert]
         if not force:
             remaining_pulls = [  # type: ignore[var-annotated]
                 x
@@ -513,7 +513,7 @@ class Runner:
 
 def print_diff(diff: str) -> None:
     try:
-        subprocess.run(["delta"], input=diff.encode(), check=True)  # noqa: S607
+        subprocess.run(["delta"], input=diff.encode(), check=True)  # ruff:ignore[start-process-with-partial-path]
     except FileNotFoundError:
         print()
         print(diff)
