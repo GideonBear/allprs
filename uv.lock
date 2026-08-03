@@ -93,27 +93,27 @@ wheels = [
 
 [[package]]
 name = "githubkit-schemas"
-version = "26.7.11"
+version = "26.7.29"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "githubkit" },
     { name = "githubkit-schemas-2026-03-10" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/a3/ca564d389a0124995fc86c6af9e1c4f2dd265edffd2550ef141e5319002b/githubkit_schemas-26.7.11.tar.gz", hash = "sha256:4fc44381fb704d40ca9231e51187bd862bc45599772aa9412da3c59bf76d0a49", size = 120821, upload-time = "2026-07-11T04:13:29.268Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/54/b1/fa782f2196a8b07a3861d64119b337b6c3ac982d2cf7e884415d584107e4/githubkit_schemas-26.7.29.tar.gz", hash = "sha256:6644286f505f6611bafb4bce5ccc8f0c4f80950096a5cc25ebe7f60ff233648f", size = 122896, upload-time = "2026-07-29T13:33:12.743Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/4b/aaed52283a4d2fc93c87d652d2ced00788f69f1d16b810d4b1ed817afc29/githubkit_schemas-26.7.11-py3-none-any.whl", hash = "sha256:365a4c107751678661ca2ec9ec4054e5fc7561dc2c2f8210c5dbca5809439ccc", size = 123775, upload-time = "2026-07-11T04:13:21.627Z" },
+    { url = "https://files.pythonhosted.org/packages/87/ab/576eb2fe11ad112cab72f6cdc3b36e71b70c75c3d90c463786858c65551c/githubkit_schemas-26.7.29-py3-none-any.whl", hash = "sha256:99af38aa99f848ddd614edb893ae20552ab81f8e006b64f4ad58af914ec61f1a", size = 125715, upload-time = "2026-07-29T13:33:04.865Z" },
 ]
 
 [[package]]
 name = "githubkit-schemas-2026-03-10"
-version = "26.7.11"
+version = "26.7.29"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "githubkit-schemas" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ac/ea/ee47de3c98e25d26bef4cde4add5d93192f1611a444f117ea595f9b78e8d/githubkit_schemas_2026_03_10-26.7.11.tar.gz", hash = "sha256:1114da11abcc6cb31dbde3f9f1b966e2f19f76deeb1469a419d93cb1fff2a7eb", size = 1333448, upload-time = "2026-07-11T04:13:31.273Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8e/fd/07e6b1c95e8f6e540b83c6ffd90a8d441d71ad52bb3cf28a87073353e7f6/githubkit_schemas_2026_03_10-26.7.29.tar.gz", hash = "sha256:f7e79b2fac75b2a277d1de212e207b3ed79cd4dbf69a3625910e48087811188b", size = 1362448, upload-time = "2026-07-29T13:33:14.96Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c0/28/5d6fc45b9e392c037a05a40c20f68d75bb0aced49826479361c1dcf5d4ae/githubkit_schemas_2026_03_10-26.7.11-py3-none-any.whl", hash = "sha256:2529b4df757bf7a8f849652e0e328f30b15899043d93f77385f290d9889f54d2", size = 3312991, upload-time = "2026-07-11T04:13:24.463Z" },
+    { url = "https://files.pythonhosted.org/packages/1d/00/78dd4979f9fb262b24505b59f0bc7af12241cd1f5e907bf90a62952d412d/githubkit_schemas_2026_03_10-26.7.29-py3-none-any.whl", hash = "sha256:55a0a501c3db3f6f5f53bc5c5264f946badbeec885d33b94617e6f1c1e325917", size = 3411734, upload-time = "2026-07-29T13:33:07.736Z" },
 ]
 
 [[package]]
