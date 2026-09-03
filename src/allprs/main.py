@@ -154,7 +154,7 @@ class Runner:
             self.queue.put_nowait(DONE)
             await ui_task
 
-            print("Waiting for last follow-up tasks to complete...")
+            print("Waiting for all tasks to complete...")
 
         for warning in self.warnings:
             print(f"WARNING: {warning}")
