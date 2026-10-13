@@ -119,9 +119,6 @@ repos:
     rev: v2.4.0
     hooks:
       - id: mypy
-        # A language feature we use (map strict argument) is only available
-        #  from 3.14, and mypy uses the environments python version's typeshed
-        #language_version: python3.15
         pass_filenames: false # Check all files to be thorough
         args: [.] # Removes default `--ignore-missing-imports`
         additional_dependencies:
