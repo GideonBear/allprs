@@ -122,7 +122,7 @@ repos:
         pass_filenames: false # Check all files to be thorough
         args: [.] # Removes default `--ignore-missing-imports`
         additional_dependencies:
-          - githubkit==0.16.1
+          - githubkit==0.17.0
           - prompt-toolkit==3.0.53
           - ghtoken==0.1.2
 
