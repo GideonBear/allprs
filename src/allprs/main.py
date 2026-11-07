@@ -340,6 +340,14 @@ class Runner:
             if isinstance(title_group, DoneType):
                 return
 
+            if title_group[0][0].lower().startswith(("nosquash", "rebase")):
+                self.warnings.append(
+                    f"Refusing to merge nosquash/rebase-prefixed PR "
+                    f"'{title_group[0][0]}' ({title_group[0][2][0].pr.html_url})"
+                )
+                self.queue.task_done()
+                continue
+
             while title_group:
                 title, diff, diff_prs = title_group[-1]
                 result = await self.ui_diff_group(title, diff, diff_prs)
