@@ -71,11 +71,7 @@ def main() -> int:
     return runner.exit_code
 
 
-class DoneType:
-    pass
-
-
-DONE = DoneType()
+DONE = sentinel("DONE")
 
 
 @dataclass
@@ -111,7 +107,7 @@ class Runner:
                     Sequence[FullPr],
                 ]
             ]
-            | DoneType
+            | DONE
         ] = asyncio.Queue()
         self.follow_tasks: asyncio.TaskGroup
         self.quit = Event()
@@ -337,7 +333,7 @@ class Runner:
             clear()
             print("Waiting for diffgroup...")
             title_group = await self.queue.get()
-            if isinstance(title_group, DoneType):
+            if title_group is DONE:
                 return
 
             if title_group[0][0].lower().startswith(("nosquash", "rebase")):
