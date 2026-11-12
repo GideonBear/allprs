@@ -71,9 +71,6 @@ def main() -> int:
     return runner.exit_code
 
 
-DONE = sentinel("DONE")
-
-
 @dataclass
 class FullPr:
     pr: PullRequest
@@ -107,7 +104,6 @@ class Runner:
                     Sequence[FullPr],
                 ]
             ]
-            | DONE
         ] = asyncio.Queue()
         self.follow_tasks: asyncio.TaskGroup
         self.quit = Event()
@@ -147,7 +143,7 @@ class Runner:
                 [queue_empty_task, quit_task], return_when=asyncio.FIRST_COMPLETED
             )
             # Let the ui task know we're done (if the queue was empty)
-            self.queue.put_nowait(DONE)
+            self.queue.shutdown()
             await ui_task
 
             print("Waiting for all tasks to complete...")
@@ -332,8 +328,9 @@ class Runner:
         while not self.quit.is_set():
             clear()
             print("Waiting for diffgroup...")
-            title_group = await self.queue.get()
-            if title_group is DONE:
+            try:
+                title_group = await self.queue.get()
+            except asyncio.QueueShutDown:
                 return
 
             if title_group[0][0].lower().startswith(("nosquash", "rebase")):
